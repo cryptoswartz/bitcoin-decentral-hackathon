@@ -1,0 +1,50 @@
+if 0:
+    return(100)
+else:
+    frm = msg.sender
+    if msg.data[0] == 1: // publish
+        if !(msg.datasize == 2):
+            return(0)
+        root = msg.data[1]
+        if contract.storage[root]: // if data already exists, return(0) 
+            return(0)
+        contract.storage[root] = frm
+        contract.storage[root + 1] = 0
+        return (1)
+    elif msg.data[0] == 2: //tag
+        if !(msg.datasize == 3):
+            return(0)
+        root = msg.data[1]
+        if !contract.storage[root]: // if data does not exist, return(0) 
+            return(0)
+        tag = msg.data[2]
+        ntags = contract.storage[root + 1]
+        i = 0
+        while i < ntags: // if tag already exists, return(0)
+            if contract.storage[root + 1 + 3*i] == tag:
+                return(0)
+            i = i + 1
+        ntags = ntags + 1
+        contract.storage[root + 1 + 3*ntags] = tag
+        return(2)
+    elif msg.data[0] == 3: //vote
+        if !(msg.datasize == 4):
+            return(0)
+        root = msg.data[1]
+        tag = msg.data[2]
+        vote = msg.data[3]
+        if !contract.storage[root]: // if data does not exist, return(0) 
+            return(0)
+        ntags = contract.storage[root + 1]
+        found = false // find tag
+        i = 0
+        tagnum = 0
+        while i < ntags:
+            i = i + 1
+            if contract.storage[root + 1 + 3*i] == tag:
+                tagnum = i
+        if vote == 1:
+            contract.storage[root + 1 + (3*i + 1)] = contract.storage[root + 1 + (3*i + 1)] + 1
+        else            
+            contract.storage[root + 1 + (3*i + 2)] = contract.storage[root + 1 + (3*i + 2)] + 1
+        return(3)
