@@ -28,10 +28,10 @@ if msg.sender == owner
             contract.storage[frm+3] = 0 //nvotes
             contract.storage[frm+5] = 0 // rep ...
         ntag = contract.storage[frm+2]
-        ntag = ntag+1
+        ntag = ntag + 1
         contract.storage[frm+2] = ntag
-        contract.storage[frm + 10 + 1000 + 2*ntag] = tag
-        contract.storage[frm + 10 + 1000 + 2*ntag+1] = root
+        contract.storage[frm + 10 + 1000 + 3*ntag] = tag
+        contract.storage[frm + 10 + 1000 + 3*ntag + 2] = root
         return(1)
     elif msg.datasize == 4: // name registry
         frm = msg.data[0]
@@ -42,25 +42,29 @@ if msg.sender == owner
             contract.storage[frm+5] = 0 // rep ...
         name = msg.data[1]
         contract.storage[frm] = name
-    elif msg.datasize == 5: //vote
+    elif msg.datasize == 6: //vote
         frm = msg.data[0]
         if !(contract.storage[frm]):
             contract.storage[frm] = frm //default set name to address
             contract.storage[frm+1] = 0 //ncontent
             contract.storage[frm+2] = 0 //ntags
             contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // rep ...
+            contract.storage[frm+5] = 0 // pubrep ...
+            contract.storage[frm+6] = 0 // tagrep ...
+            contract.storage[frm+7] = 0 // voterep ...
         root = msg.data[1]
         tag = msg.data[2]
         vote = msg.data[3]
-        votecount = msg.data[4]
+        upvotes = msg.data[4]
+        downvotes = msg.data[5]
         nvotes = contract.storage[frm+3]
         nvotes = nvotes + 1
         contract.storage[frm+3] = nvotes
-        contract.storage[frm + 10 + 5000 + 4*nvotes] = vote
-        contract.storage[frm + 10 + 5000 + 4*nvotes + 1] = tag
-        contract.storage[frm + 10 + 5000 + 4*nvotes + 2] = root
-        contract.storage[frm + 10 + 5000 + 4*nvotes + 3] = votecount
+        contract.storage[frm + 10 + 5000 + 5*nvotes] = vote
+        contract.storage[frm + 10 + 5000 + 5*nvotes + 1] = tag
+        contract.storage[frm + 10 + 5000 + 5*nvotes + 2] = root
+        contract.storage[frm + 10 + 5000 + 5*nvotes + 3] = upvotes
+        contract.storage[frm + 10 + 5000 + 5*nvotes + 4] = downvotes
         return(1)
 else:
     return(2)

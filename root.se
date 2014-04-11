@@ -42,6 +42,7 @@ else:
         elif msg.data[0] == 3: //vote
             if !(msg.datasize == 4):
                 return(0)
+            frm = msg.sender
             root = msg.data[1]
             tag = msg.data[2]
             vote = msg.data[3]
@@ -52,7 +53,11 @@ else:
             else:
                 to = contract.storage[1002]
                 out = msg(to,0,tx.gas-100,[root, tag, vote], 3)
-                return(out)
+                upvotes = out[1]
+                downvotes = out[2]
+                to = contract.storage[1004]
+                out = msg(to,0,tx.gas-100,[frm, root, tag, vote, upvotes, downvotes], 6)
+            return(1)
         elif msg.data[0] == 5: //register name with id
            if !(msg.datasize ==2):
                 return(0)

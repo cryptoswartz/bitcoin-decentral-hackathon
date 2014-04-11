@@ -37,6 +37,8 @@ if msg.sender == owner:
                 contract.storage[root + (3*tagnum + 1)] = contract.storage[root + (3*tagnum + 1)] + 1
             else
                 contract.storage[root + (3*tagnum + 2)] = contract.storage[root + (3*tagnum + 2)] + 1
-            return(1)
+            upvotes = contract.storage[root + 3*tagnum +1]
+            downvotes = contract.storage[root + 3*tagnum +2]
+            return([1, upvotes, downvotes])
 else:
     return(1954)
