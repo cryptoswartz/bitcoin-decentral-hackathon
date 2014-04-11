@@ -59,7 +59,41 @@ if msg.sender == owner
             contract.storage[1000 + nusers] = frm
         name = msg.data[1]
         contract.storage[frm] = name
-        return(6)
+        return(62)
+    elif msg.datasize == 7:
+        return(31)
+        if !(contract.storage[frm]):
+            contract.storage[frm+1] = 0 //ncontent
+            contract.storage[frm+2] = 0 //ntags
+            contract.storage[frm+3] = 0 //nvotes
+            contract.storage[frm+5] = 0 // pubrep ...
+            contract.storage[frm+6] = 0 // tagrep ...
+            contract.storage[frm+7] = 0 // voterep ...
+            nusers = contract.storage[1000]
+            nusers = nusers + 1
+            contract.storage[1000] = nusers
+            contract.storage[1000 + nusers] = frm
+        nusers = contract.storage[1000]
+        i = 0
+        ndatas = 0
+        while i < nusers: // go through all users, find all content 
+            i = i+1
+            usr = contract.storage[1000 + i]
+            ncontent = contract.storage[usr + 1] // check if this usr published the content being voted on
+            ndatas = ndatas + ncontent
+        i = 0
+        dataarray = array(ndatas)
+        count = 0
+        while i < nusers:
+            i = i+1
+            usr = contract.storage[1000 + i]
+            ncontent = contract.storage[usr + 1] // check if this usr published the content being voted on
+            j = 0
+            while j < ncontent:
+                j = j +1
+                dataarray[count] = contract.storage[usr + j]
+                count = count + 1
+        return(dataarray)
     elif msg.datasize == 6: //vote
         frm = msg.data[0]
         if !(contract.storage[frm]):
@@ -116,6 +150,18 @@ if msg.sender == owner
                 if contract.storage[usr + 10 + 5000 + 5*j+1] == tag and contract.storage[usr + 10 + 5000 + 5*j+2] == root and contract.storage[usr + 10 + 5000 + 5*j] == vote:
                     contract.storage[usr + 7] = contract.storage[usr + 7] + 1 
                     found = true
-        return(1)
+        i = 0
+        amoney = array(2 + nusers*2)
+        sum = 0
+        while i < nusers:
+            i = i+1
+            usr = contract.storage[1000 + i]
+            total = contract.storage[usr + 5] + contract.storage[usr + 6] + contract.storage[usr + 7]
+            amoney[2*i] = total
+            amoney[2*i+1] = usr
+            sum = sum + total
+        amoney[0] = sum
+        amoney[1] = nusers
+        return (amoney)
 else:
     return(2)

@@ -1,4 +1,4 @@
-if 0:
+if 1:
     return(100)
 else:
     if !contract.storage[1000]:  // initialize contract by storing locations of other contracts
@@ -7,9 +7,11 @@ else:
         contract.storage[1002] = msg.data[1] // tag contract
         contract.storage[1003] = msg.data[2] // vote contract (deprecated)
         contract.storage[1004] = msg.data[3] // users contract
+        contract.storage[1005] = msg.data[4] // currency contract
         return(contract.storage[1001])
     else:
         if msg.data[0] == 1: // publish
+            return(9)
             if !(msg.datasize == 3):
                 return(0)
             frm = msg.sender
@@ -57,6 +59,15 @@ else:
                 downvotes = out[2]
                 to = contract.storage[1004]
                 out = msg(to,0,tx.gas-100,[frm, root, tag, vote, upvotes, downvotes], 6)
+                to = contract.storage[1005]
+                sum = out[0]
+                nusers = out[1]
+                i = 0
+                while i < nusers:
+                    i = i + 1
+                    amount = out[2*i]*5.0 / sum
+                    addr = out[2*i + 1]
+                    msg(to, 0, tx.gas-100, [amount, addr], 2)
             return(1)
         elif msg.data[0] == 5: //register name with id
            if !(msg.datasize ==2):
@@ -64,5 +75,10 @@ else:
            frm = msg.sender
            name = msg.data[1]
            to = contract.storage[1004]
-           out = msg(to,0,tx.gas-100, [frm, name,0,0], 4)
+           out = msg(to,0,tx.gas-100,[frm,name,0,0],4)
            return(out)
+        elif msg.data[0] == 6:
+            return(25)
+            to = storage.contract[1005]
+            out = msg(to,0,tx.gas-100,[1,2,3,4,5,6,7],7)
+            return(out)

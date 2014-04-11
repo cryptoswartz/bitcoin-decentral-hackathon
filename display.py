@@ -5,7 +5,6 @@ encode_int = utils.int_to_big_endian
 
 
 def byte_to_string(jj):
-    print jj
     if type(jj) == int:
        return jj
     if type(jj) == long:
@@ -69,4 +68,3 @@ def display_block_chain(genesis, addrs):
             else:
                 print s.encode('hex')
         print ''
-    quit()

@@ -1,11 +1,12 @@
 owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
-if msg.sender == owner
+if msg.sender == owner:
     if msg.datasize == 3:
+        return(10)
         root = msg.data[0]
         frm = msg.data[1]        
         title = msg.data[2]
         if contract.storage[root]: // if data already exists, return(0) 
-            return(0)
+            return(1)
         contract.storage[root] = frm
         contract.storage[root + 1] = title
         return(1)
