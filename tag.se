@@ -1,5 +1,5 @@
 owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
-if sender == owner:
+if msg.sender == owner:
     if msg.datasize == 3: //tag
         root = msg.data[0] // this root has already been validated in root.se
         if !contract.storage[root]:
@@ -21,6 +21,7 @@ if sender == owner:
             contract.storage[root + 3*ntags] = tag
             contract.storage[root + 3*ntags+1] = 0
             contract.storage[root + 3*ntags+2] = 0
+            return(1)
         elif mode == 50: // check tag (get vote state too)
             if tagnum == 0:
                 return([tagnum])
@@ -36,5 +37,6 @@ if sender == owner:
                 contract.storage[root + (3*tagnum + 1)] = contract.storage[root + (3*tagnum + 1)] + 1
             else
                 contract.storage[root + (3*tagnum + 2)] = contract.storage[root + (3*tagnum + 2)] + 1
+            return(1)
 else:
-    return(3)
+    return(1954)

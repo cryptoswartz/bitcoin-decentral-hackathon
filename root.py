@@ -40,7 +40,7 @@ content = "anthony is a badass"
 content_hash = utils.sha3(content)
 title = "story"
 
-tag = "a true statement"
+tag = 'a true statement'
 tag_hash = utils.sha3(tag)
 
 vote = 1
@@ -60,23 +60,19 @@ jj = genesis.get_storage_data(users_contract, addr)
 print hex(jj)[2:-1].decode('hex')
 
 # tag some content.  recover tag from blockchain.
-tx_tag = transactions.Transaction(7, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, tag_hash])).sign(key)
+tx_tag = transactions.Transaction(7, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, tag])).sign(key)
 ans = processblock.apply_tx(genesis, tx_tag)
-print 'tag results: ', ans.encode('hex')
+tx_tag = transactions.Transaction(8, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, 'goodstuff'])).sign(key)
+ans = processblock.apply_tx(genesis, tx_tag)
+a = int(content_hash.encode('hex'),16) + 3 # index of first tag
+ntags = genesis.get_storage_data(tag_contract,  content_hash)
+jj = genesis.get_storage_data(tag_contract, a)
+print ntags, hex(jj)[2:-1].decode('hex')
 
-quit()
-
-tx_vote = transactions.Transaction(7, 0, 10**12, 10000, root_contract, serpent.encode_datalist([3, content_hash, tag_hash, vote])).sign(key)
+#vote on a tag. 
+tx_vote = transactions.Transaction(9, 0, 10**12, 10000, root_contract, serpent.encode_datalist([3, content_hash, tag, vote])).sign(key)
 ans = processblock.apply_tx(genesis, tx_vote)
 print ans.encode('hex')
-
-
-tx_name_me = transactions.Transaction(8, 0, 10**12, 10000, root_contract, serpent.encode_datalist([5, 'fagson'])).sign(key)
-ans = processblock.apply_tx(genesis, tx_name_me)
-print ans.encode('hex')
-
-print genesis.get_storage_data(u_contract, addr)
-print genesis.to_dict()
 
 
 
