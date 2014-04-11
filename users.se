@@ -1,0 +1,66 @@
+owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
+if msg.sender == owner
+    if !contract.storage[1000]:
+        contract.storage[1000] = 0
+        contract.storage[1001] = array(100) // 100 users allowed, for now...
+    if msg.datasize == 2: // publish
+        root = msg.data[0]
+        frm = msg.data[1]
+        if !(contract.storage[frm]):
+            contract.storage[frm] = frm //default set name to address
+            contract.storage[frm+1] = 0 //ncontent
+            contract.storage[frm+2] = 0 //ntags
+            contract.storage[frm+3] = 0 //nvotes
+            contract.storage[frm+5] = 0 // rep ...
+        ncontent = contract.storage[frm+1]
+        ncontent = ncontent + 1
+        contract.storage[frm+1] = ncontent
+        contract.storage[frm + 10 + ncontent] = root
+        return (1)
+    elif msg.datasize == 3: //tag
+        root = msg.data[0]
+        tag = msg.data[1]
+        frm = msg.data[2]
+        if !(contract.storage[frm]): // one day ethereum will have functions and all will be sane again in cryptoland
+            contract.storage[frm] = frm //default set name to address
+            contract.storage[frm+1] = 0 //ncontent
+            contract.storage[frm+2] = 0 //ntags
+            contract.storage[frm+3] = 0 //nvotes
+            contract.storage[frm+5] = 0 // rep ...
+        ntag = contract.storage[frm+2]
+        ntag = ntag+1
+        contract.storage[frm+2] = ntag
+        contract.storage[frm + 10 + 1000 + 2*ntag] = tag
+        contract.storage[frm + 10 + 1000 + 2*ntag+1] = root
+        return(1)
+    elif msg.datasize == 4: // name registry
+        frm = msg.data[0]
+        if !(contract.storage[frm]):
+            contract.storage[frm+1] = 0 //ncontent
+            contract.storage[frm+2] = 0 //ntags
+            contract.storage[frm+3] = 0 //nvotes
+            contract.storage[frm+5] = 0 // rep ...
+        name = msg.data[1]
+        contract.storage[frm] = name
+    elif msg.datasize == 5: //vote
+        frm = msg.data[0]
+        if !(contract.storage[frm]):
+            contract.storage[frm] = frm //default set name to address
+            contract.storage[frm+1] = 0 //ncontent
+            contract.storage[frm+2] = 0 //ntags
+            contract.storage[frm+3] = 0 //nvotes
+            contract.storage[frm+5] = 0 // rep ...
+        root = msg.data[1]
+        tag = msg.data[2]
+        vote = msg.data[3]
+        votecount = msg.data[4]
+        nvotes = contract.storage[frm+3]
+        nvotes = nvotes + 1
+        contract.storage[frm+3] = nvotes
+        contract.storage[frm + 10 + 5000 + 4*nvotes] = vote
+        contract.storage[frm + 10 + 5000 + 4*nvotes + 1] = tag
+        contract.storage[frm + 10 + 5000 + 4*nvotes + 2] = root
+        contract.storage[frm + 10 + 5000 + 4*nvotes + 3] = votecount
+        return(1)
+else:
+    return(2)

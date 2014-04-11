@@ -3,26 +3,30 @@ if 0:
 else:
     if !contract.storage[1000]:  // initialize contract by storing locations of other contracts
         contract.storage[1000] = 1
-        contract.storage[1001] = msg.data[0]
-        contract.storage[1002] = msg.data[1]
-        contract.storage[1003] = msg.data[2]
+        contract.storage[1001] = msg.data[0] // data contract
+        contract.storage[1002] = msg.data[1] // tag contract
+        contract.storage[1003] = msg.data[2] // vote contract (deprecated)
+        contract.storage[1004] = msg.data[3] // users contract
         return(contract.storage[1001])
     else:
         if msg.data[0] == 1: // publish
-            if !(msg.datasize == 2):
+            if !(msg.datasize == 3):
                 return(0)
             frm = msg.sender
             to = contract.storage[1001]
             root = msg.data[1]
-            data = array(2)
-            data[0] = root
-            data[1] = frm
-            out = msg(to,0,tx.gas-1000,data,2)
+            title = msg.data[2]
+            out = msg(to,0,tx.gas-1000,[root,frm,title],3) //
+            if !(out == 0):
+                frm = frm // this should be a sha3 (since we need users to be far from eachother in memopry to make room for their activities)
+                to = contract.storage[1004]
+                out2 = msg(to,0,tx.gas-1000,[root, frm],2)
             return(out)
         elif msg.data[0] == 2: //tag
             if !(msg.datasize == 3):
                 return(0)
             root = msg.data[1]
+            frm = msg.sender
             to = contract.storage[1001]
             dataexists = msg(to,0,tx.gas-100,[root],1) 
             if dataexists == 0:
@@ -31,25 +35,35 @@ else:
                 tag = msg.data[2]
                 to = contract.storage[1002]
                 out = msg(to,0,tx.gas-100,[root, tag, 0],3)
+                if !(out == 0):
+                    to = contract.storage[1004]
+                    out = msg(to,0,tx.gas-100,[root,tag,frm],3)
             return(2)
         elif msg.data[0] == 3: //vote
-                if !(msg.datasize == 4):
-                    return(0)
-                root = msg.data[1]
-                tag = msg.data[2]
-                vote = msg.data[3]
-                to = contract.storage[1001]
-                dataexists = msg(to,0,tx.gas-100,[root],1) 
-                if dataexists == 0:
+            if !(msg.datasize == 4):
+                return(0)
+            root = msg.data[1]
+            tag = msg.data[2]
+            vote = msg.data[3]
+            to = contract.storage[1001]
+            dataexists = msg(to,0,tx.gas-100,[root],1) 
+            if dataexists == 0:
+                stop
+            else:
+                to = contract.storage[1002]
+                ntags = contract.storage[root + 1]
+                tagnum = msg(to,0,tx.gas-100,[root, tag, 1],2)
+                if tagnum == 0:
                     stop
                 else:
-                    to = contract.storage[1002]
-                    ntags = contract.storage[root + 1]
-                    tagnum = msg(to,0,tx.gas-100,[root, tag, 1],2)
-                    if tagnum == 0:
-                        stop
-                    else:
-                        to = contract.storage[1003]
-                        msg(to,0,tx.gas-100,[root,tagnum,vote,0],3)
-                    return(3)
-
+                    to = contract.storage[1003]
+                    msg(to,0,tx.gas-100,[root,tagnum,vote,0],3)
+                return(3)
+        elif msg.data[0] == 5: //register name with id
+           if !(msg.datasize ==2):
+                return(0)
+           frm = msg.sender
+           name = msg.data[1]
+           to = contract.storage[1004]
+           out = msg(to,0,tx.gas-100, [frm, name,0,0], 4)
+           return(out)
