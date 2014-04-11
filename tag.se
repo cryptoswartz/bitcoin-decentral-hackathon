@@ -1,0 +1,36 @@
+owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
+if sender == owner:
+    if msg.datasize == 3: //tag
+        root = msg.data[0]
+        if !contract.storage[root]:
+            contract.storage[root] = 0 //ntags
+        ntags = contract.storage[root] 
+        tag = msg.data[1]
+        mode = msg.data[2] // 0 to tag, 1 to check for tag, 2 to vote
+        i = 0
+        tagnum = 0
+        while i < ntags and tagnum == 0: // if tag already exists, stop
+            i = i + 1
+            if contract.storage[root + 3*i] == tag:
+                tagnum = i
+        if mode == 0:
+            if !(tagnum == 0):
+                stop //tried to add new tag, but already exists!
+            ntags = ntags + 1
+            contract.storage[root + 3*ntags] = tag
+            contract.storage[root + 3*ntags+1] = 0
+            contract.storage[root + 3*ntags+2] = 0
+        elif mode == 1:
+            return(tagnum) // if 0, it didnt find the tag
+        elif mode == 2:
+            vote = msg
+    elif msg.datasize == 4:
+        root = msg.data[0]
+        tagnum = msg.data[1]
+        vote = msg.data[2]
+        if vote == 1:
+            contract.storage[root + (3*ntags + 1)] = contract.storage[root + (3*ntags + 1)] + 1
+        else
+            contract.storage[root + (3*i + 2)] = contract.storage[root + (3*i + 2)] + 1
+else:
+    return(3)
