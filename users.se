@@ -1,8 +1,7 @@
 owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
 if msg.sender == owner
-    if !contract.storage[1000]:
-        contract.storage[1000] = 0
-        contract.storage[1001] = array(100) // 100 users allowed, for now...
+    if !contract.storage[1000]: //initialize user database
+        contract.storage[1000] = 0 // nusers.  we will allow 1000 users and just place their addresses in the next 1000 slots
     if msg.datasize == 2: // publish
         root = msg.data[0]
         frm = msg.data[1]
@@ -11,7 +10,13 @@ if msg.sender == owner
             contract.storage[frm+1] = 0 //ncontent
             contract.storage[frm+2] = 0 //ntags
             contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // rep ...
+            contract.storage[frm+5] = 0 // pubrep ...
+            contract.storage[frm+6] = 0 // tagrep ...
+            contract.storage[frm+7] = 0 // voterep ...
+            nusers = contract.storage[1000]
+            nusers = nusers + 1
+            contract.storage[1000] = nusers
+            contract.storage[1000 + nusers] = frm
         ncontent = contract.storage[frm+1]
         ncontent = ncontent + 1
         contract.storage[frm+1] = ncontent
@@ -26,12 +31,18 @@ if msg.sender == owner
             contract.storage[frm+1] = 0 //ncontent
             contract.storage[frm+2] = 0 //ntags
             contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // rep ...
+            contract.storage[frm+5] = 0 // pubrep ...
+            contract.storage[frm+6] = 0 // tagrep ...
+            contract.storage[frm+7] = 0 // voterep ...
+            nusers = contract.storage[1000]
+            nusers = nusers + 1
+            contract.storage[1000] = nusers
+            contract.storage[1000 + nusers] = frm
         ntag = contract.storage[frm+2]
         ntag = ntag + 1
         contract.storage[frm+2] = ntag
         contract.storage[frm + 10 + 1000 + 3*ntag] = tag
-        contract.storage[frm + 10 + 1000 + 3*ntag + 2] = root
+        contract.storage[frm + 10 + 1000 + 3*ntag + 1] = root
         return(1)
     elif msg.datasize == 4: // name registry
         frm = msg.data[0]
@@ -39,7 +50,13 @@ if msg.sender == owner
             contract.storage[frm+1] = 0 //ncontent
             contract.storage[frm+2] = 0 //ntags
             contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // rep ...
+            contract.storage[frm+5] = 0 // pubrep ...
+            contract.storage[frm+6] = 0 // tagrep ...
+            contract.storage[frm+7] = 0 // voterep ...
+            nusers = contract.storage[1000]
+            nusers = nusers + 1
+            contract.storage[1000] = nusers
+            contract.storage[1000 + nusers] = frm
         name = msg.data[1]
         contract.storage[frm] = name
     elif msg.datasize == 6: //vote
@@ -52,6 +69,10 @@ if msg.sender == owner
             contract.storage[frm+5] = 0 // pubrep ...
             contract.storage[frm+6] = 0 // tagrep ...
             contract.storage[frm+7] = 0 // voterep ...
+            nusers = contract.storage[1000]
+            nusers = nusers + 1
+            contract.storage[1000] = nusers
+            contract.storage[1000 + nusers] = frm
         root = msg.data[1]
         tag = msg.data[2]
         vote = msg.data[3]
@@ -65,6 +86,35 @@ if msg.sender == owner
         contract.storage[frm + 10 + 5000 + 5*nvotes + 2] = root
         contract.storage[frm + 10 + 5000 + 5*nvotes + 3] = upvotes
         contract.storage[frm + 10 + 5000 + 5*nvotes + 4] = downvotes
+        nusers = contract.storage[1000]
+        i = 0
+        while i < nusers: // go through all users, update rep of those who published, taged, or voted before this latest vote
+            i = i+1
+            usr = contract.storage[1000 + i]
+            ncontent = contrct.storage[frm + 1] // check if this usr published the content being voted on
+            j = 0
+            found = false
+            while j < ncontent and found == false:
+                j = j + 1
+                if contract.storage[usr + 10 + j] == root:
+                    contract.storage[usr + 5] = contract.storage[usr + 5] + 1 //pub rep increased!
+                    found = true
+            ntags = contract.storage[frm + 2] // check if this usr published the tag on this content
+            j=0
+            found = false
+            while j < ntags and found == false:
+                j = j + 1
+                if contract.storage[usr + 1000 + 3*j] == tag and contract.storage[usr + 1000 + 3*j+1] == root:
+                    contract.storage[usr + 6] = contract.storage[usr + 6] + 1 //tag rep increased!
+                    found = true
+            nvotes = contract.storage[usr + 3] // check if this usr voted the same way as the current vote in the past
+            j = 0
+            found = false
+            while j < nvotes and found == false:
+                j = j + 1
+                if contract.storage[usr + 5000 + 4*j+1] == tag and contract.storage[usr + 5000 + 4*j+2] == root and contract.storage[usr + 5000 + 4*j] == vote:
+                    contract.storage[usr + 7] = contract.storage[usr + 7] + 1 
+                    found = true
         return(1)
 else:
     return(2)

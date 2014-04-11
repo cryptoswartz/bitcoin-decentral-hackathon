@@ -1,9 +1,9 @@
 import serpent
 from pyethereum import transactions, blocks, processblock, utils
-from display import byte_to_string, display_user
+from display import *
 
 def new_user(brain_pass):
-    key = utils.sha3('this is a great brain wallet')
+    key = utils.sha3('fucktits')
     addr = utils.privtoaddr(key)
     return key, addr
 
@@ -23,10 +23,26 @@ def genesis_block(users, coins_each=10**18):
     gen = blocks.Block.genesis(dd)
     return gen
 
+def write_owner(root_hash, filename):
+    root_hash = root_contract.encode('hex')
+    f = open(filename)
+    d = f.readlines()
+    f.close()
+    d[0] = 'owner = %s\n'%root_hash
+    f = open('filename', 'w')
+    f.writelines(d)
+    f.close()
+
+
 def init_system(genesis, key):
 
     code = serpent.compile(open('root.se').read())
     tx_make_root = transactions.Transaction.contract(0,0,10**12, 10000, code).sign(key)
+    root_contract = processblock.apply_tx(genesis, tx_make_root)
+
+    f = lambda x: write_owner(root_contract, x)
+    map(f, ['data.se', 'tag.se', 'users.se'])
+
     code = serpent.compile(open('data.se').read())
     tx_make_data = transactions.Transaction.contract(1,0,10**12, 10000, code).sign(key)
     code = serpent.compile(open('tag.se').read())
@@ -34,7 +50,6 @@ def init_system(genesis, key):
     code = serpent.compile(open('users.se').read())
     tx_make_users = transactions.Transaction.contract(3,0,10**12, 10000, code).sign(key)
 
-    root_contract = processblock.apply_tx(genesis, tx_make_root)
     data_contract = processblock.apply_tx(genesis, tx_make_data)
     tag_contract = processblock.apply_tx(genesis, tx_make_tag)
     users_contract = processblock.apply_tx(genesis, tx_make_users)
@@ -52,32 +67,36 @@ def init_system(genesis, key):
 
     return adresses
 
-def push_content(content, title, key, genesis, root_contract, nonce):
+def push_content(content, title, key, genesis, root_contract, addr):
+    nonce = get_nonce(genesis, addr)
+    print nonce
     content_hash = utils.sha3(content)
     # push a transaction with a title.  recover title from blockchain
     tx_push = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([1, content_hash, title])).sign(key)
     ans = processblock.apply_tx(genesis, tx_push)
     return content_hash
 
-def register_name(name, key, root_contract, genesis, nonce):
+def register_name(name, key, root_contract, genesis, addr):
+    nonce = get_nonce(genesis, addr)
     # register eth-address to a name.  recover name from blockchain.  names are not unique. but names + first 4 digits of address probably are....
     tx_register_name = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([5, 'ethan'])).sign(key)
     ans = processblock.apply_tx(genesis, tx_register_name)
 
-def tag_content(content_hash, tag, key, root_contract, genesis, nonce):
+def tag_content(content_hash, tag, key, root_contract, genesis, addr):
+    nonce = get_nonce(genesis, addr)
     tx_tag = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, tag])).sign(key)
     ans = processblock.apply_tx(genesis, tx_tag)
 
-def vote_tag(content_hash, tag, vote, root_contract, key, genesis, nonce):
+def vote_tag(content_hash, tag, vote, root_contract, key, genesis, addr):
+    nonce = get_nonce(genesis, addr)
     #vote on a tag. 
     tx_vote = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([3, content_hash, tag, vote])).sign(key)
     ans = processblock.apply_tx(genesis, tx_vote)
 
-
-
 def get_content_title(content_hash, data_contract, genesis):
     a = int(content_hash.encode('hex'),16) + 1 # index of title
     jj = genesis.get_storage_data(data_contract, a)
+    print jj
     return hex(jj)[2:-1].decode('hex')
 
 def get_name(user_addr, users_contract, genesis):

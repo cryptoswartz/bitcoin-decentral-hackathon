@@ -26,6 +26,13 @@ def display_user(genesis, user_contract, user_addr):
     keys = ['name', 'ncontent', 'ntags', 'nvotes', 'pubrep', 'tagrep', 'voterep']
     print zip(keys, deets)
 
+def get_nonce(genesis, addr):
+    di = genesis.to_dict()
+    state = di['state']
+    for k in state.keys():
+        if k == addr:
+            return int((state[k])[0])
+    return 0
 
 def display_block_chain(genesis, addrs):
     di = genesis.to_dict()
