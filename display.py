@@ -1,13 +1,18 @@
 import serpent
 from pyethereum import transactions, blocks, processblock, utils
+decode_int = utils.big_endian_to_int
+encode_int = utils.int_to_big_endian
+
 
 def byte_to_string(jj):
+    print jj
     if type(jj) == int:
        return jj
     if type(jj) == long:
         if len(str(jj)) %2 != 0:
             return int(jj)
-    return hex(jj)[2:-1].decode('hex')
+    return decode_int(jj)
+    #return hex(jj)[2:-1].decode('hex')
 
 def display_user(genesis, user_contract, user_addr):
     print ''
@@ -20,13 +25,18 @@ def display_user(genesis, user_contract, user_addr):
     trep = genesis.get_storage_data(user_contract, ad+6)
     vrep = genesis.get_storage_data(user_contract, ad+7)
 
-    deets = [name, ncontent, ntags, nvotes, prep, trep, vrep]
-    deets = map(byte_to_string, deets)
-    
+    name = encode_int(name)
+    deets = [ncontent, ntags, nvotes, prep, trep, vrep]
+    deets = map(int, deets)
+    deets = [name] + deets 
     keys = ['name', 'ncontent', 'ntags', 'nvotes', 'pubrep', 'tagrep', 'voterep']
     print zip(keys, deets)
 
 def get_nonce(genesis, addr):
+    if len(addr) == 40: addr = addr.decode('hex')
+    acct = genesis.state.get(addr) or ['','','','']
+    return decode_int(acct[0])
+
     di = genesis.to_dict()
     state = di['state']
     for k in state.keys():

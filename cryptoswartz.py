@@ -3,7 +3,7 @@ from pyethereum import transactions, blocks, processblock, utils
 from display import *
 
 def new_user(brain_pass):
-    key = utils.sha3('fucktits')
+    key = utils.sha3(brain_pass)
     addr = utils.privtoaddr(key)
     return key, addr
 
@@ -18,29 +18,27 @@ def make_population(N):
 
 
 def genesis_block(users, coins_each=10**18):
-
     dd = dict(zip(users, [coins_each]*len(users)))
     gen = blocks.Block.genesis(dd)
     return gen
 
 def write_owner(root_hash, filename):
-    root_hash = root_contract.encode('hex')
     f = open(filename)
     d = f.readlines()
     f.close()
-    d[0] = 'owner = %s\n'%root_hash
-    f = open('filename', 'w')
+    d[0] = 'owner = 0x%s\n'%root_hash
+    f = open(filename, 'w')
     f.writelines(d)
     f.close()
-
 
 def init_system(genesis, key):
 
     code = serpent.compile(open('root.se').read())
     tx_make_root = transactions.Transaction.contract(0,0,10**12, 10000, code).sign(key)
     root_contract = processblock.apply_tx(genesis, tx_make_root)
-
-    f = lambda x: write_owner(root_contract, x)
+    
+    root_hash = root_contract.encode('hex')
+    f = lambda x: write_owner(root_hash, x)
     map(f, ['data.se', 'tag.se', 'users.se'])
 
     code = serpent.compile(open('data.se').read())
@@ -69,7 +67,6 @@ def init_system(genesis, key):
 
 def push_content(content, title, key, genesis, root_contract, addr):
     nonce = get_nonce(genesis, addr)
-    print nonce
     content_hash = utils.sha3(content)
     # push a transaction with a title.  recover title from blockchain
     tx_push = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([1, content_hash, title])).sign(key)
@@ -79,11 +76,12 @@ def push_content(content, title, key, genesis, root_contract, addr):
 def register_name(name, key, root_contract, genesis, addr):
     nonce = get_nonce(genesis, addr)
     # register eth-address to a name.  recover name from blockchain.  names are not unique. but names + first 4 digits of address probably are....
-    tx_register_name = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([5, 'ethan'])).sign(key)
+    tx_register_name = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([5, name])).sign(key)
     ans = processblock.apply_tx(genesis, tx_register_name)
 
-def tag_content(content_hash, tag, key, root_contract, genesis, addr):
+def tag_content(content_hash, tag, key, root_contract, genesis, addr, nonce = None):
     nonce = get_nonce(genesis, addr)
+       
     tx_tag = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, tag])).sign(key)
     ans = processblock.apply_tx(genesis, tx_tag)
 

@@ -49,7 +49,7 @@ else:
             to = contract.storage[1001]
             dataexists = msg(to,0,tx.gas-100,[root],1) 
             if dataexists == 0:
-                stop
+                return(199)
             else:
                 to = contract.storage[1002]
                 out = msg(to,0,tx.gas-100,[root, tag, vote], 3)

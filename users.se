@@ -1,4 +1,4 @@
-owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
+owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
 if msg.sender == owner
     if !contract.storage[1000]: //initialize user database
         contract.storage[1000] = 0 // nusers.  we will allow 1000 users and just place their addresses in the next 1000 slots
@@ -59,6 +59,7 @@ if msg.sender == owner
             contract.storage[1000 + nusers] = frm
         name = msg.data[1]
         contract.storage[frm] = name
+        return(6)
     elif msg.datasize == 6: //vote
         frm = msg.data[0]
         if !(contract.storage[frm]):
@@ -91,7 +92,7 @@ if msg.sender == owner
         while i < nusers: // go through all users, update rep of those who published, taged, or voted before this latest vote
             i = i+1
             usr = contract.storage[1000 + i]
-            ncontent = contrct.storage[frm + 1] // check if this usr published the content being voted on
+            ncontent = contract.storage[frm + 1] // check if this usr published the content being voted on
             j = 0
             found = false
             while j < ncontent and found == false:
@@ -104,7 +105,7 @@ if msg.sender == owner
             found = false
             while j < ntags and found == false:
                 j = j + 1
-                if contract.storage[usr + 1000 + 3*j] == tag and contract.storage[usr + 1000 + 3*j+1] == root:
+                if contract.storage[usr + 10 + 1000 + 3*j] == tag and contract.storage[usr + 10 + 1000 + 3*j+1] == root:
                     contract.storage[usr + 6] = contract.storage[usr + 6] + 1 //tag rep increased!
                     found = true
             nvotes = contract.storage[usr + 3] // check if this usr voted the same way as the current vote in the past
@@ -112,7 +113,7 @@ if msg.sender == owner
             found = false
             while j < nvotes and found == false:
                 j = j + 1
-                if contract.storage[usr + 5000 + 4*j+1] == tag and contract.storage[usr + 5000 + 4*j+2] == root and contract.storage[usr + 5000 + 4*j] == vote:
+                if contract.storage[usr + 10 + 5000 + 5*j+1] == tag and contract.storage[usr + 10 + 5000 + 5*j+2] == root and contract.storage[usr + 10 + 5000 + 5*j] == vote:
                     contract.storage[usr + 7] = contract.storage[usr + 7] + 1 
                     found = true
         return(1)

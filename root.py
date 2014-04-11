@@ -13,21 +13,32 @@ data_contract = [i for i,j in zip(contracts.keys(), contracts.values()) if j=='d
 users_contract = [i for i,j in zip(contracts.keys(), contracts.values()) if j=='users'][0]
 tag_contract = [i for i,j in zip(contracts.keys(), contracts.values()) if j=='tags'][0]
 
-c1 = push_content("anthony is a badass", "story", master_key, genesis, root_contract, master_addy)
-print c1.encode('hex')
+
+c1 = push_content("anthony is a badass", "story", master_key, genesis, root_contract, users[0])
+c2 = push_content("some bullshit about your mamma", "the deets", keys[0], genesis, root_contract, users[0])
+register_name('ethan', master_key, root_contract, genesis, users[0]) 
+register_name('dickface', keys[1], root_contract, genesis, users[1]) 
+
+
+
+tag_content(c1, 'balls', master_key, root_contract, genesis, users[0])
+tag_content(c1, 'dickcheese', keys[1], root_contract, genesis, users[1])
+
+
+tag_content(c1, 'genius', master_key, root_contract, genesis, users[0])
+tag_content(c1, 'spam', keys[0], root_contract, genesis, users[0])
+tag_content(c2, 'genius', keys[1], root_contract, genesis, users[1])
+
+vote_tag(c1, 'spam', 1, root_contract, keys[1], genesis, users[1])
+vote_tag(c1, 'spam', 1, root_contract, keys[1], genesis, users[1])
+vote_tag(c1, 'spam', 1, root_contract, keys[1], genesis, users[1])
+vote_tag(c1, 'spam', 1, root_contract, keys[0], genesis, users[0])
+vote_tag(c1, 'spam', 1, root_contract, keys[0], genesis, users[0])
+
+
 for addr in users:
     display_user(genesis, users_contract, addr)
-    print ''
 quit()
-c2 = push_content("some bullshit about your mamma", "the deets", keys[1], genesis, root_contract, users[1])
-register_name('ethan', master_key, root_contract, genesis, users[0]) 
-tag_content(c1, 'balls', master_key, root_contract, genesis, users[0])
-tag_content(c1, 'dickcheese', master_key, root_contract, genesis, users[0])
-tag_content(c1, 'genius', master_key, root_contract, genesis, users[1])
-tag_content(c1, 'spam', keys[1], root_contract, genesis, users[0])
-tag_content(c2, 'genius', keys[0], root_contract, genesis, users[1])
-
-
 
 
 

@@ -1,4 +1,4 @@
-owner = 0x20429cea79060774ae9efd2ddc69e62b90c32b46
+owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
 if msg.sender == owner:
     if msg.datasize == 3: //tag
         root = msg.data[0] // this root has already been validated in root.se

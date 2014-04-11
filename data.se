@@ -1,4 +1,4 @@
-owner = 706f7c117d76f141fe700036b9cac7d9766748cb
+owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
 if msg.sender == owner
     if msg.datasize == 3:
         root = msg.data[0]
