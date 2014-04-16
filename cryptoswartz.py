@@ -82,6 +82,11 @@ def push_content(content, title, genesis, root_contract, usr):
     # push a transaction with a title.  recover title from blockchain
     tx_push = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([1, content_hash, title])).sign(key)
     ans = processblock.apply_tx(genesis, tx_push)
+
+    f = open('data/%s'%content_hash.encode('hex'), 'w')
+    f.write(content)
+    f.close()
+
     return content_hash
 
 def register_name(name, genesis, root_contract, usr):
@@ -97,14 +102,12 @@ def tag_content(content_hash, tag, genesis, root_contract, usr):
     nonce = get_nonce(genesis, addr)
     tx_tag = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([2, content_hash, tag])).sign(key)
     ans = processblock.apply_tx(genesis, tx_tag)
-    print 'tag result'
-    print ans.encode('hex')
 
 def vote_tag(content_hash, tag, vote, genesis, root_contract, usr):
     key, addr = usr
     nonce = get_nonce(genesis, addr)
     #vote on a tag. 
-    tx_vote = transactions.Transaction(nonce, 0, 10**2, 1, root_contract, serpent.encode_datalist([3, content_hash, tag, vote])).sign(key)
+    tx_vote = transactions.Transaction(nonce, 0, 10**12, 10000, root_contract, serpent.encode_datalist([3, content_hash, tag, vote])).sign(key)
     ans = processblock.apply_tx(genesis, tx_vote)
 
 
@@ -125,6 +128,11 @@ def get_all_content(genesis, root_contract, usr):
     hexd = map(f, hexd)
     return hexd
 
+def get_content(content_hash):
+    f = open('data/%s'%content_hash.encode('hex'))
+    content = f.read()
+    f.close()
+    return content
 
 def get_content_title(content_hash, data_contract, genesis):
     #a = int(content_hash.encode('hex'),16) + 1 # index of title
@@ -134,7 +142,6 @@ def get_content_title(content_hash, data_contract, genesis):
 
 def get_name(user_addr, users_contract, genesis):
     jj = genesis.get_storage_data(users_contract, user_addr)
-    print jj
     return hex(jj)[2:-1].decode('hex')
 
 def get_tags(content_hash, tag_contract, genesis):
@@ -147,3 +154,25 @@ def get_tags(content_hash, tag_contract, genesis):
         tag = hex(jj)[2:-1].decode('hex')
         tags.append(tag)
     return tags
+
+def get_votes(content_hash, tag, tag_contract, genesis):
+    ntags = genesis.get_storage_data(tag_contract,  content_hash)
+    found = False
+    for i in xrange(ntags):
+        a = int(content_hash.encode('hex'), 16) + 3*(i+1) # index of ith tag
+        jj = genesis.get_storage_data(tag_contract, a)
+        t = hex(jj)[2:-1].decode('hex')
+        if tag == t:
+            tagnum = i
+            found = True
+            break
+    if found  == True:
+        a = int(content_hash.encode('hex'), 16) + 3*tagnum + 1 # index of upvotes
+        uv = genesis.get_storage_data(tag_contract, a)
+        dv = genesis.get_storage_data(tag_contract, a+1)
+        return int(uv), int(dv)
+    else:
+        return None
+    
+
+

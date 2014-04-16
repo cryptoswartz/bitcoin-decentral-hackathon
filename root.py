@@ -27,6 +27,14 @@ tag_content(c1, 'genius', genesis, root_contract, usrs[0])
 tag_content(c1, 'cooldude', genesis, root_contract, usrs[0])
 tag_content(c1, 'shitty', genesis, root_contract, usrs[1])
 
+vote_tag(c1, 'genius', 1, genesis, root_contract, usrs[0])
+vote_tag(c1, 'cooldude', 1, genesis, root_contract, usrs[0])
+
+
+#get_tags(c1, tag_contract, genesis)
+#get_votes(c1, 'cooldude', tag_contract, genesis)
+
+
 '''
 aa = get_all_content(genesis, root_contract, usrs[0])
 b = aa[0] 

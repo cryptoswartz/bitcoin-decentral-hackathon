@@ -82,7 +82,7 @@ else:
            out = msg(to,0,tx.gas-100,[frm,name,0,0],4)
            return(out)
 
-        elif msg.data[0] == 7:
+        elif msg.data[0] == 7: // get all content
             to = contract.storage[1004]
             ndatas = msg(to,0,tx.gas-100,[100,0,0,0,0,0,0], 7)
             out = msg(to,0,tx.gas-100,[200,ndatas,0,0,0,0,0], 7, ndatas)

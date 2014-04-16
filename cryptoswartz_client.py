@@ -3,12 +3,6 @@ from PyQt4 import QtGui, QtCore
 from random import randint
 import root
 from root import *
-data = []
-for i in xrange(100):
-	data.append([randint(1,200000)])
-        data[i].append([])
-	for j in xrange(20):
-		data[i][1].append([randint(1,200000), randint(1,20), randint(1,20)])
 
 Currency = 1000
 Rep = 10.0
@@ -27,17 +21,14 @@ print D
 
 for i in xrange(len(D)):
     t = get_tags(D[i][1], tag_contract, genesis)
-    D[i].append(t)
+    tt = []
+    for tag in t:
+        votes = get_votes(D[i][1], tag, tag_contract, genesis)
+        tt.append([tag, votes])
+    D[i].append(tt)
 
-
-'''
-print Currency
-s = genesis.to_dict()['state']
-for k in s.keys():
-    print s[k][2].encode('hex')
-
-print get_name(usrs[0][1], users_contract, genesis)
-'''
+for i in xrange(len(D)):
+    print D[i]
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -92,6 +83,7 @@ class FormWidget(QtGui.QWidget):
         self.coinamountEdit = QtGui.QLineEdit()
         self.sendaddressEdit = QtGui.QLineEdit()
         sendBtn = QtGui.QPushButton('Send')
+        contenttag = QtGui.QLabel('Content:')
 
 
         self.publist = QtGui.QListWidget(self)
@@ -101,6 +93,7 @@ class FormWidget(QtGui.QWidget):
         self.downvotes = QtGui.QLCDNumber(self)
         self.netvotes = QtGui.QLCDNumber(self)
         self.currency = QtGui.QLCDNumber(self)
+        self.content = QtGui.QTextEdit(self)
         self.rep = QtGui.QLCDNumber(self)
 
         grid = QtGui.QGridLayout()
@@ -129,10 +122,15 @@ class FormWidget(QtGui.QWidget):
         grid.addWidget(cointag, 9, 2)
         grid.addWidget(self.coinamountEdit,9,3)
         grid.addWidget(self.sendaddressEdit,8,3)
+        grid.addWidget(self.content,6,4,7,4)
+        grid.addWidget(contenttag,5,4)
         grid.addWidget(sendBtn,10,3)
 
         for i in D:
             self.publist.addItem(i[0])
+        content = get_content(D[0][1])
+        self.content.setText(content)
+
 
         self.publist.setCurrentRow(0)			
         self.showTags()
@@ -147,6 +145,7 @@ class FormWidget(QtGui.QWidget):
         openFile.triggered.connect(self.showDialog)
 		
         self.publist.currentItemChanged.connect(self.showTags)
+        self.publist.currentItemChanged.connect(self.showContent)
         self.taglist.currentItemChanged.connect(self.showVotes)
 
         tagBtn.clicked.connect(self.issueTag)
@@ -175,11 +174,14 @@ class FormWidget(QtGui.QWidget):
             self.currency.display(current) #genesis.get_balance(usrs[0][1])/BIG)             
 
     def showVotes(self):
-		index1 = self.publist.currentRow()
-		index2 = self.taglist.currentRow()
-		self.upvotes.display(data[index1][1][index2][1])
-		self.downvotes.display(data[index1][1][index2][2])
-		self.netvotes.display(data[index1][1][index2][1] - data[index1][1][index2][2])
+        index1 = self.publist.currentRow()
+        index2 = self.taglist.currentRow()
+        upvotes = D[index1][2][index2][1][0]
+        downvotes = D[index1][2][index2][1][1]
+        self.upvotes.display(upvotes)
+        self.downvotes.display(downvotes)
+        self.netvotes.display(upvotes - downvotes)
+
     def upvoteButton(self):
         index1 = self.publist.currentRow()
         index2 = self.taglist.currentRow()
@@ -191,14 +193,28 @@ class FormWidget(QtGui.QWidget):
         data[index1][1][index2][2] += 1
         self.showVotes()
     def issueTag(self):
+        index = self.publist.currentRow()
+        tag = self.tagEdit.text()
+
+        chash= D[index][1]
+        tag_content(chash, str(tag), genesis, root_contract, usrs[0])
+        D[index][2].append([self.tagEdit.text(), (0,0)])
         self.taglist.addItem(self.tagEdit.text())
         self.tagEdit.clear()		
+
     def showTags(self):
 		self.taglist.clear()
 		index = self.publist.currentRow()
 		for j in xrange(len(D[index][2])):
-		    self.taglist.addItem(D[index][2][j])                
+		    self.taglist.addItem(D[index][2][j][0])                
 		self.taglist.setCurrentRow(0)
+
+    def showContent(self):
+        self.content.clear()
+        index = self.publist.currentRow()
+        content = get_content(D[index][1])
+        self.content.setText(content)
+
     def showDialog(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
         self.sender().parent().parent().statusBar().showMessage('Staging file: ' + fname)
