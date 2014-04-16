@@ -1,0 +1,21 @@
+owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
+if msg.sender == owner:
+    amount = msg.data[0]
+    addr = msg.data[1]
+    if !(contract.storage[addr]):
+        contact.storage[addr] = 0
+    contract.storage[addr] = contract.storage[addr] + amount // coin creation
+else:
+    frm = msg.sender
+    to = msg.data[0]
+    amount = msg.data[1]
+    if !(contract.storage[frm]):
+        contact.storage[frm] = 0
+    if !(contract.storage[to]):
+        contact.storage[to] = 0
+    bal = contract.storage[frm]
+    if bal < amount:
+        stop
+    else:
+        contract.storage[frm] = contract.storage[frm] - amount
+        contract.storage[to] = contract.storage[to] + amount

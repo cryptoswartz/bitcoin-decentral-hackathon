@@ -1,5 +1,6 @@
 owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
 if msg.sender == owner:
+
     if msg.datasize == 3: //tag
         root = msg.data[0] // this root has already been validated in root.se
         if !contract.storage[root]:
@@ -13,6 +14,7 @@ if msg.sender == owner:
             i = i + 1
             if contract.storage[root + 3*i] == tag:
                 tagnum = i
+
         if mode == 10: //new tag
             if !(tagnum == 0):
                 return(0) //tried to add new tag, but already exists!
@@ -21,7 +23,8 @@ if msg.sender == owner:
             contract.storage[root + 3*ntags] = tag
             contract.storage[root + 3*ntags+1] = 0
             contract.storage[root + 3*ntags+2] = 0
-            return(1)
+            return(ntags)
+
         elif mode == 50: // check tag (get vote state too)
             if tagnum == 0:
                 return([tagnum])

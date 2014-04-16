@@ -2,9 +2,9 @@ owner = 0xf760ff38b957f8380c308c2e65e060af99ab4c85
 if msg.sender == owner
     if !contract.storage[1000]: //initialize user database
         contract.storage[1000] = 0 // nusers.  we will allow 1000 users and just place their addresses in the next 1000 slots
-    if msg.datasize == 2: // publish
-        root = msg.data[0]
-        frm = msg.data[1]
+
+    if !(msg.datasize == 7)
+        frm = msg.data[0]
         if !(contract.storage[frm]):
             contract.storage[frm] = frm //default set name to address
             contract.storage[frm+1] = 0 //ncontent
@@ -17,97 +17,67 @@ if msg.sender == owner
             nusers = nusers + 1
             contract.storage[1000] = nusers
             contract.storage[1000 + nusers] = frm
+
+    if msg.datasize == 2: // publish
+        frm = msg.data[0]
+        root = msg.data[1]
+
         ncontent = contract.storage[frm+1]
         ncontent = ncontent + 1
         contract.storage[frm+1] = ncontent
         contract.storage[frm + 10 + ncontent] = root
         return (1)
+
     elif msg.datasize == 3: //tag
-        root = msg.data[0]
-        tag = msg.data[1]
-        frm = msg.data[2]
-        if !(contract.storage[frm]): // one day ethereum will have functions and all will be sane again in cryptoland
-            contract.storage[frm] = frm //default set name to address
-            contract.storage[frm+1] = 0 //ncontent
-            contract.storage[frm+2] = 0 //ntags
-            contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // pubrep ...
-            contract.storage[frm+6] = 0 // tagrep ...
-            contract.storage[frm+7] = 0 // voterep ...
-            nusers = contract.storage[1000]
-            nusers = nusers + 1
-            contract.storage[1000] = nusers
-            contract.storage[1000 + nusers] = frm
+        frm = msg.data[0]
+        root = msg.data[1]
+        tag = msg.data[2]
+
         ntag = contract.storage[frm+2]
         ntag = ntag + 1
         contract.storage[frm+2] = ntag
         contract.storage[frm + 10 + 1000 + 3*ntag] = tag
         contract.storage[frm + 10 + 1000 + 3*ntag + 1] = root
         return(1)
+
     elif msg.datasize == 4: // name registry
         frm = msg.data[0]
-        if !(contract.storage[frm]):
-            contract.storage[frm+1] = 0 //ncontent
-            contract.storage[frm+2] = 0 //ntags
-            contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // pubrep ...
-            contract.storage[frm+6] = 0 // tagrep ...
-            contract.storage[frm+7] = 0 // voterep ...
-            nusers = contract.storage[1000]
-            nusers = nusers + 1
-            contract.storage[1000] = nusers
-            contract.storage[1000 + nusers] = frm
         name = msg.data[1]
         contract.storage[frm] = name
         return(62)
-    elif msg.datasize == 7:
-        return(31)
-        if !(contract.storage[frm]):
-            contract.storage[frm+1] = 0 //ncontent
-            contract.storage[frm+2] = 0 //ntags
-            contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // pubrep ...
-            contract.storage[frm+6] = 0 // tagrep ...
-            contract.storage[frm+7] = 0 // voterep ...
+
+    elif msg.datasize == 7: // get user info
+        // first return the number of data points
+        if msg.data[0] == 100:
             nusers = contract.storage[1000]
-            nusers = nusers + 1
-            contract.storage[1000] = nusers
-            contract.storage[1000 + nusers] = frm
-        nusers = contract.storage[1000]
-        i = 0
-        ndatas = 0
-        while i < nusers: // go through all users, find all content 
-            i = i+1
-            usr = contract.storage[1000 + i]
-            ncontent = contract.storage[usr + 1] // check if this usr published the content being voted on
-            ndatas = ndatas + ncontent
-        i = 0
-        dataarray = array(ndatas)
-        count = 0
-        while i < nusers:
-            i = i+1
-            usr = contract.storage[1000 + i]
-            ncontent = contract.storage[usr + 1] // check if this usr published the content being voted on
-            j = 0
-            while j < ncontent:
-                j = j +1
-                dataarray[count] = contract.storage[usr + j]
-                count = count + 1
-        return(dataarray)
+            i = 0
+            ndatas = 0
+            while i < nusers: // go through all users, find all content 
+                i = i+1
+                usr = contract.storage[1000 + i]
+                ncontent = contract.storage[usr + 1] 
+                ndatas = ndatas + ncontent
+            return (ndatas) 
+
+        elif msg.data[0] == 200:
+            nusers = contract.storage[1000]
+            ndatas = msg.data[1]
+            i = 0
+            dataarray = array(ndatas)
+            count = 0
+            while i < nusers:
+                i = i+1
+                usr = contract.storage[1000 + i]
+                ncontent = contract.storage[usr + 1]
+                j = 0
+                while j < ncontent:
+                    j = j +1
+                    dataarray[count] = contract.storage[usr + 10 + j]
+                    count = count + 1
+            return(dataarray, ndatas)
+
     elif msg.datasize == 6: //vote
         frm = msg.data[0]
-        if !(contract.storage[frm]):
-            contract.storage[frm] = frm //default set name to address
-            contract.storage[frm+1] = 0 //ncontent
-            contract.storage[frm+2] = 0 //ntags
-            contract.storage[frm+3] = 0 //nvotes
-            contract.storage[frm+5] = 0 // pubrep ...
-            contract.storage[frm+6] = 0 // tagrep ...
-            contract.storage[frm+7] = 0 // voterep ...
-            nusers = contract.storage[1000]
-            nusers = nusers + 1
-            contract.storage[1000] = nusers
-            contract.storage[1000 + nusers] = frm
         root = msg.data[1]
         tag = msg.data[2]
         vote = msg.data[3]

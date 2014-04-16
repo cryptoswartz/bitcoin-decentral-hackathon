@@ -13,17 +13,31 @@ for i in xrange(100):
 Currency = 1000
 Rep = 10.0
 
-Currency = int(genesis.get_balance(users[0]))
+BIG = 100000000000000
+Currency = int(genesis.get_balance(usrs[0][1]))/BIG
+
+content = get_all_content(genesis, root_contract, usrs[0])
+f = lambda x: get_content_title(x, data_contract, genesis)
+titles = map(f, content)
+print titles
+
+
+D = [[t, c] for t, c in zip(titles, content)]
+print D
+
+for i in xrange(len(D)):
+    t = get_tags(D[i][1], tag_contract, genesis)
+    D[i].append(t)
+
+
+'''
+print Currency
 s = genesis.to_dict()['state']
 for k in s.keys():
     print s[k][2].encode('hex')
 
-print get_name(master_addy, users_contract, genesis)
-
-data = get_all_content(genesis, master_addy, root_contract, master_key)
-quit()
-print data
-quit()
+print get_name(usrs[0][1], users_contract, genesis)
+'''
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -117,8 +131,8 @@ class FormWidget(QtGui.QWidget):
         grid.addWidget(self.sendaddressEdit,8,3)
         grid.addWidget(sendBtn,10,3)
 
-        for i in xrange(len(data)):
-            self.publist.addItem(str(data[i][0]))
+        for i in D:
+            self.publist.addItem(i[0])
 
         self.publist.setCurrentRow(0)			
         self.showTags()
@@ -153,15 +167,19 @@ class FormWidget(QtGui.QWidget):
         #    print "Negative transaction balances are invalid" 
         if 0: pass
         else:
-            send_money(master_key, second_addy, 10, genesis, master_addy, root_contract)
-            self.currency.display(genesis.get_balance(users[0]))             #self.currency.display(self.currency.value() - float(self.coinamountEdit.text()))
+            to_send = self.coinamountEdit.text()
+            to_send = int(to_send)
+            send_money(usrs[1][1], to_send*BIG, genesis, root_contract, usrs[0])
+            current = self.currency.value()
+            current = current - to_send
+            self.currency.display(current) #genesis.get_balance(usrs[0][1])/BIG)             
+
     def showVotes(self):
 		index1 = self.publist.currentRow()
 		index2 = self.taglist.currentRow()
 		self.upvotes.display(data[index1][1][index2][1])
 		self.downvotes.display(data[index1][1][index2][2])
 		self.netvotes.display(data[index1][1][index2][1] - data[index1][1][index2][2])
-
     def upvoteButton(self):
         index1 = self.publist.currentRow()
         index2 = self.taglist.currentRow()
@@ -178,8 +196,8 @@ class FormWidget(QtGui.QWidget):
     def showTags(self):
 		self.taglist.clear()
 		index = self.publist.currentRow()
-		for j in xrange(len(data[index][1])):
-		    self.taglist.addItem(str(int(data[index][1][j][0])))                
+		for j in xrange(len(D[index][2])):
+		    self.taglist.addItem(D[index][2][j])                
 		self.taglist.setCurrentRow(0)
     def showDialog(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file')

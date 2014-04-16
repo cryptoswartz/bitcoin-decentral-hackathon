@@ -1,17 +1,18 @@
-if 1:
-    return(100)
+if 0:
+    return(106)
+
 else:
     if !contract.storage[1000]:  // initialize contract by storing locations of other contracts
         contract.storage[1000] = 1
         contract.storage[1001] = msg.data[0] // data contract
         contract.storage[1002] = msg.data[1] // tag contract
-        contract.storage[1003] = msg.data[2] // vote contract (deprecated)
-        contract.storage[1004] = msg.data[3] // users contract
-        contract.storage[1005] = msg.data[4] // currency contract
+        contract.storage[1004] = msg.data[2] // users contract
+        contract.storage[1005] = msg.data[3] // currency contract
         return(contract.storage[1001])
+
     else:
+
         if msg.data[0] == 1: // publish
-            return(9)
             if !(msg.datasize == 3):
                 return(0)
             frm = msg.sender
@@ -22,25 +23,27 @@ else:
             if !(out == 0):
                 frm = frm // this should be a sha3 (since we need users to be far from eachother in memopry to make room for their activities)
                 to = contract.storage[1004]
-                out2 = msg(to,0,tx.gas-1000,[root, frm],2)
+                out2 = msg(to,0,tx.gas-1000,[frm, root],2)
             return(out)
+
         elif msg.data[0] == 2: //tag
-            if !(msg.datasize == 3):
-                return(0)
+            //if !(msg.datasize == 3):
+            //    return(3)
             root = msg.data[1]
             frm = msg.sender
             to = contract.storage[1001]
             dataexists = msg(to,0,tx.gas-100,[root],1) //check if data exists
             if dataexists == 0:
-                return(1963)
+                return(7)
             else:
                 tag = msg.data[2]
                 to = contract.storage[1002]
                 out = msg(to,0,tx.gas-100,[root, tag, 10],3)
                 if !(out == 0):
                     to = contract.storage[1004]
-                    out = msg(to,0,tx.gas-100,[root,tag,frm],3)
+                    out = msg(to,0,tx.gas-100,[frm,root,tag],3)
             return(1)
+
         elif msg.data[0] == 3: //vote
             if !(msg.datasize == 4):
                 return(0)
@@ -69,6 +72,7 @@ else:
                     addr = out[2*i + 1]
                     msg(to, 0, tx.gas-100, [amount, addr], 2)
             return(1)
+
         elif msg.data[0] == 5: //register name with id
            if !(msg.datasize ==2):
                 return(0)
@@ -77,8 +81,9 @@ else:
            to = contract.storage[1004]
            out = msg(to,0,tx.gas-100,[frm,name,0,0],4)
            return(out)
-        elif msg.data[0] == 6:
-            return(25)
-            to = storage.contract[1005]
-            out = msg(to,0,tx.gas-100,[1,2,3,4,5,6,7],7)
-            return(out)
+
+        elif msg.data[0] == 7:
+            to = contract.storage[1004]
+            ndatas = msg(to,0,tx.gas-100,[100,0,0,0,0,0,0], 7)
+            out = msg(to,0,tx.gas-100,[200,ndatas,0,0,0,0,0], 7, ndatas)
+            return(out, ndatas)
